@@ -1,19 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useRef, useState,useCallback } from "react";
 import CandlestickChart from "../../component/CandleStickChart";
 import { FaPenNib } from "react-icons/fa";
-import { TbChartCandle, TbChartCandleFilled } from "react-icons/tb";
-import { FaChartLine } from "react-icons/fa6";
-import { TbChartDots } from "react-icons/tb";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { FaRegLightbulb } from "react-icons/fa";
 import { SlCalender } from "react-icons/sl";
-import { CiShare2 } from "react-icons/ci";
-import { MdOutlineZoomOutMap } from "react-icons/md";
-import { CiSettings } from "react-icons/ci";
-import { IoDiamondOutline } from "react-icons/io5";
 import { StockPriceType } from "../../type";
-
+import { optons1, option2, option3, option4, dateFilter } from "../../constant";
 
 export const Route = createFileRoute("/stock/lazy/$ric")({
   component: RouteComponent,
@@ -21,7 +14,17 @@ export const Route = createFileRoute("/stock/lazy/$ric")({
     try {
       const response = await fetch("http://127.0.0.1:5000/stocks/stock_prices");
       if (!response.ok) throw new Error("Failed to fetch stock data");
-      return await response.json();
+      const data = await response.json();
+      const filterWeekends = (data: StockPriceType[]) => {
+        return data.filter((d) => {
+          const date = new Date(d.Date);
+          const day = date.getDay(); 
+          return  (day !== 0 && day !== 6); // Lọc bỏ Chủ Nhật (0) và Thứ Bảy (6)
+        });
+      };
+
+      const filteredData = filterWeekends(data);
+      return filteredData;
     } catch (error) {
       return [];
     }
@@ -34,11 +37,16 @@ function RouteComponent() {
   const [isOpenSelectOption, setIsOpenSelectOption] = useState(false);
   const [selectedOption, setSelectedOption] = useState(0);
   const [selectedDateFilter, setSelectedDateFilter] = useState(0);
- 
-  const optons1 = ["Technology", "Consumer Electromics", "USA", "NASD"];
+
+  const parsedData= useCallback(()=>{
+    
+
+
+
+  },[dateFilter])
 
   return (
-    <div className="h-screen w-full bg-[#181b22]">
+    <div className="h-screen w-full bg-[#181b22] overflow-hidden">
       {/* HEADER */}
       <div
         ref={headerRef}
@@ -193,11 +201,9 @@ function RouteComponent() {
             </div>
           </div>
 
-      
-
           <CandlestickChart
-            headerHeight={headerRef.current?.clientHeight || 0}
-            data={data.slice(0,130)}
+  
+            data={data.slice(0,150)}
           />
         </div>
       </div>
@@ -205,40 +211,4 @@ function RouteComponent() {
   );
 }
 
-const option2 = [
-  "Stock Detail",
-  "Company Profile",
-  "Financials",
-  "Analyst Ratings",
-  "Insider Trading",
-  "Institutional Ownership",
-  "Income Statement",
-];
 
-const option3 = [
-  {
-    title: "Candle - simple",
-    icon: <TbChartCandle size={16} color="#e8e9eb" />,
-  },
-  {
-    title: "Candle - advanced",
-    icon: <TbChartCandleFilled size={16} color="#e8e9eb" />,
-  },
-  {
-    title: "Line",
-    icon: <FaChartLine size={16} color="#e8e9eb" />,
-  },
-  {
-    title: "OHLC",
-    icon: <TbChartDots size={16} color="#e8e9eb" />,
-  },
-];
-
-const option4 = [
-  { title: "Share", icon: <CiShare2 size={16} color="#e8e9eb" /> },
-  { icon: <IoDiamondOutline size={16} color="#e8e9eb" /> },
-  { icon: <MdOutlineZoomOutMap size={16} color="#e8e9eb" /> },
-  { icon: <CiSettings size={16} color="#e8e9eb" /> },
-];
-
-const dateFilter = ["InmtraDay", "Daily", "Weekly", "Monthly"];

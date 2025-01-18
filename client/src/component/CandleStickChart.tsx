@@ -3,11 +3,11 @@ import * as d3 from "d3";
 import { StockPriceType } from "../type";
 import { createAxix, createCandlestickChart } from "../d3/drawD3";
 import { addMouseEvents, addZoomBehavior } from "../d3/eventD3";
-type parsedDataType = StockPriceType & { date: Date };
+import { width, height } from "../constant";
 
 const CandlestickChart: React.FC<{
   data: StockPriceType[];
-  headerHeight: number;
+
 }> = ({ data }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [candleWidth, setCandleWidth] = useState(6);
@@ -19,13 +19,8 @@ const CandlestickChart: React.FC<{
     High: number;
     Low: number;
   }>(data[0]);
-  const width = 1200;
-  const height = 400;
 
-  const parsedData: parsedDataType[] = data.map((d) => ({
-    ...d,
-    date: new Date(d.Date),
-  }));
+  const [originX, setOriginX] = useState(0);
 
   // Create x and y axes
 
@@ -34,23 +29,52 @@ const CandlestickChart: React.FC<{
 
     d3.select(svgRef.current).selectAll("*").remove();
 
+
     // SVG container
     const svg = d3
       .select(svgRef.current)
-      .attr("width", width)
-      .attr("height", height)
+      .attr("width", width*2)
+      .attr("height", height*2)
       .attr("class", "candlestick-chart");
-
     // Chart area
-    const chartArea = svg.append("g");
 
+    const chartArea = svg.append("g")
+    .attr('class','chart-area')
+    .attr('width',width)
+    .attr('height',height)
+    ;
+
+
+    const parseDate = d3.timeParse("%Y-%m-%d");
+
+    // Làm tròn các ngày thành tuần
+    const weeks = Array.from(new Set(data.map(d => d3.timeWeek.floor(parseDate(d.Date) as Date ))));
+    
     // X and Y scales
 
     const x = d3
-      .scaleTime()
-      .domain(d3.extent(parsedData, (d) => d.date) as [Date, Date])
-      .range([0, width - 60])
-      .nice();
+      .scaleBand()
+      .domain(data.map((d) => d.Date))
+      .range([0, width - 80])
+      .padding(0);
+
+    const xRanges = data.reduce(
+      (
+        acc: {
+          [key: string]: {
+            xStart: number | undefined;
+            xEnd: number | undefined;
+          };
+        },
+        d
+      ) => {
+        const xStart = x(d.Date);
+        const xEnd = xStart! + x.bandwidth();
+        acc[d.Date] = { xStart, xEnd }; // Lưu phạm vi xStart và xEnd cho mỗi giá trị
+        return acc;
+      },
+      {}
+    );
 
     const y = d3
       .scaleLinear()
@@ -61,78 +85,52 @@ const CandlestickChart: React.FC<{
       .range([height - 50, 0]);
 
     // CandlesticksChart and Wicks
-    createCandlestickChart(chartArea, x, y, parsedData, candleWidth);
+    createCandlestickChart(chartArea, x, y, data, candleWidth);
 
     // Volume bars
     createAxix(chartArea, x, y);
 
     // Zoom behavior
-    addZoomBehavior(svg, chartArea, parsedData, candleWidth, x);
+    addZoomBehavior(svg, chartArea, data, candleWidth, x);
 
     //MOUSE EVENT
-    addMouseEvents(chartArea, x, y, parsedData, svg, setStockPrices);
+    addMouseEvents(chartArea, x, y, data, svg, setStockPrices, xRanges);
 
-    //DRAG EVENT
-    const dragReact = chartArea
-      .append("rect")
-      .attr("class", "drag_rect")
-      .attr("x", 100)
-      .attr("y", 100)
-      .attr("width", 40)
-      .attr("height", 40)
-      .attr("fill", "red");
+    // DRAG EVENT
+    // const dragRect = chartArea
+    //   .append("rect")
+    //   .attr("class", "ine")
+    //   .attr("x", 100)
+    //   .attr("x", 100)
+    //   .attr("width", 200)
+    //   .attr("height", 200)
+    //   .style("stroke", "#616a7a")
 
-    d3.select<SVGRectElement, unknown>(".drag_rect").call(
-      d3
-        .drag<SVGRectElement, unknown>()
-        .on("start", (event: any) => {
-          d3.select(this).classed("dragging", true);
-        })
-        .on("drag", (event) => {
-          const [xCor, yCor] = d3.pointer(event);
-
-          const date = x.invert(xCor);
-          const price = y.invert(yCor);
-
-          dragReact.attr("x", xCor - 60).attr("y", yCor - 200);
-        })
-        .on("end", function () {
-          // Remove dragging class when done
-          d3.select(this).classed("dragging", false);
-        })
-    );
-
-    // (
-    //   chartArea as unknown as d3.Selection<
-    //     SVGGElement,
-    //     unknown,
-    //     null,
-    //     undefined
-    //   >
-    // ).call(
+    // // let initialDragX=0
+    // // let originX= 0;
+    // d3.select<SVGRectElement, unknown>(".candlestick-chart").call(
     //   d3
-    //     .drag<SVGGElement, unknown, unknown>()
-    //     .on("drag", (event) => console.log("dragging"))
+    //     .drag<SVGRectElement, unknown>()
+    //     .on("start", (event: any) => {
+    //       const xCor = event.x;
+    //       // initialDragX = xCor;
+    //       console.log(xCor);
+    //     })
+    //     .on("drag", (event) => {
+    //       const xCor = event.x;
+    //       // console.log(xCor, initialDragX,originX);
+    //       // const xCorDiff = xCor - initialDragX-originX;
+    //       // originX = xCorDiff;
+       
+          
+    //       // dragRect.attr("x", xCorDiff);
+    //       // chartArea.attr("transform", `translate(${xCorDiff},0)`);
+    //     })
+    //     .on("end", function () {
+    //       // setOriginX(originX);
+    //       d3.select(this).classed("dragging", false);
+    //     })
     // );
-
-    // const drag = d3
-    //   .drag()
-    //   .on("start", function (event) {
-    //     // You can set cursor style when dragging starts
-    //     d3.select(this).style("cursor", "pointer");
-    //   })
-    //   .on("drag", function (event) {
-    //     d3.select(this).style("cursor", "pointer");
-
-    //     // Dragging logic here...
-    //   })
-    //   .on("end", function (event) {
-    //     // You can reset cursor style when dragging ends if you like
-    //     d3.select(this).style("cursor", "pointer");
-    //   });
-
-    // // Apply the drag behavior to your element(s)
-    // d3.select<SVGSVGElement, unknown>("your-element-selector").call(drag as any);
   }, [data]);
 
   return (
