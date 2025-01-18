@@ -5,4 +5,5 @@ export interface StockPriceType {
   Low: number;
   Close: number;
   Volume: number;
+  // SMA: number | null;
 }

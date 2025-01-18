@@ -137,7 +137,7 @@ const CandlestickChart: React.FC<{
     <>
       <div className="flex flex-row items-center  px-[1rem] gap-x-[1rem]">
         <h3 className="text-[1rem] text-text_sub font-bold">
-          {new Date(stockPrices.Date).toLocaleDateString("en-US")}
+          {/* {new Date(stockPrices.Date).toLocaleDateString("en-US")} */}
         </h3>
 
         <div className="flex flex-row items-center gap-x-[0.6rem] text-green">

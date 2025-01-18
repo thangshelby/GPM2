@@ -16,6 +16,7 @@ export const Route = createFileRoute("/stock/lazy/$ric")({
       if (!response.ok) throw new Error("Failed to fetch stock data");
       const data = await response.json();
       const filterWeekends = (data: StockPriceType[]) => {
+        console.log(data);
         return data.filter((d) => {
           const date = new Date(d.Date);
           const day = date.getDay(); 
