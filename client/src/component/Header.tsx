@@ -46,3 +46,60 @@ const Header = () => {
 };
 
 export default Header;
+
+
+  //   {/* HEADER */}
+  //   <div
+  //   ref={headerRef}
+  //   className="flex flex-row items-center justify-between bg-[#181b22] px-[2rem]"
+  // >
+  //   {/* HEADER 1 */}
+  //   <div className="flex flex-col gap-y-[0.2rem]">
+  //     <div className="flex flex-row items-center gap-x-[0.8rem]">
+  //       <h1 className="text-[2.4rem] font-bold text-text_sub">AAPL</h1>
+  //       <p className="text-[1.6rem] font-semibold text-text_primary">
+  //         Apple Inc.
+  //       </p>
+  //     </div>
+  //     <div className="flex flex-row items-center gap-x-[0.6rem]">
+  //       {optons1.map((option) => (
+  //         <p
+  //           key={option}
+  //           className="text-[1rem] font-semibold text-text_primary"
+  //         >
+  //           {option}
+  //         </p>
+  //       ))}
+  //     </div>
+  //   </div>
+
+  //   {/* HEADER 2 */}
+  //   <div className="flex flex-col items-end gap-y-[0.2rem]">
+  //     <div className="font-semibold] text-[1rem] text-text_sub">
+  //       {new Date().toLocaleDateString("en-US")}
+  //     </div>
+  //     <div className="flex flex-row items-center justify-end gap-x-[0.6rem]">
+  //       <h3 className="text-[2.4rem] font-semibold text-text_sub">
+  //         236.85
+  //       </h3>
+  //       <div>
+  //         <p className="text- text-end text-[0.9rem] font-semibold text-red">
+  //           +0.23
+  //         </p>
+  //         <p className="text- text-end text-[0.9rem] font-semibold text-red">
+  //           (+0.10%)
+  //         </p>
+  //       </div>
+  //     </div>
+  //     <div className="flex flex-row items-center justify-end gap-x-[0.4rem]">
+  //       {option2.map((option) => (
+  //         <p
+  //           key={option}
+  //           className="text-[1rem] font-semibold text-text_primary"
+  //         >
+  //           {option}
+  //         </p>
+  //       ))}
+  //     </div>
+  //   </div>
+  // </div>

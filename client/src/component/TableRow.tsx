@@ -17,7 +17,7 @@ const TableRow = ({
   setRic: (ric: string) => void;
 }) => {
   const navigate = useNavigate();
-  const {setCompany} = useCompanyStore();
+  // const {setCompany} = useCompanyStore();
   return (
     <tr key={rowValue.ric} className=" w-full ">
       <td className=" flex-row items-center justify-center truncate overflow-hidden whitespace-nowrap">
@@ -30,7 +30,7 @@ const TableRow = ({
           <p
             onClick={() => {
               setRic(rowValue.sector);
-              setCompany(rowValue);
+              // setCompany(rowValue);
               navigate("/ric");
             }}
             className="text-[1.6rem] text-white hover:text-text_primary hover:cursor-pointer font-semibold"

@@ -1,24 +1,50 @@
 import * as d3 from "d3";
-import { height, width } from "../constant"
+import { height, width } from "../constant";
 import { StockPriceType } from "../type";
 
+export const createAxix = (
+  chartArea: any,
+  x: any,
+  y: any,
+  data: StockPriceType[],
+) => {
+  const xDomain = d3.extent(data, (d) => new Date(d.Date)) as [Date, Date];
+  xDomain[1] = d3.timeDay.offset(xDomain[1], -1); // Shift the end date back by 1 day
 
-export const createAxix = (chartArea: any, x: any, y: any) => {
-  // Axes
-  // const xAxis = d3.axisBottom(x).ticks(d3.timeMonth.every(1));
-  const xAxis= d3.axisBottom(x) 
-  .ticks(d3.timeMonth.every(1))  // Đặt tick theo mỗi tháng
-  // .tickFormat((domainValue: any) => d3.timeFormat("%b %Y")(new Date( domainValue).getDate()));
-  
-  
-  const xAxisGroup = chartArea
-    .append("g")
-    .call(xAxis);
+  const newX = d3
+    .scaleTime()
+    .domain(xDomain)
+    .range([-(data.length - 112) * 10, width - 80]);
+
+  const xAxis = d3
+    .axisBottom(newX)
+    .ticks(d3.timeMonth.every(1)) // Tick mỗi tháng
+    .tickFormat((domainValue: Date | d3.NumberValue) =>
+      d3.timeFormat("%b %Y")(
+        domainValue instanceof Date
+          ? domainValue
+          : new Date(domainValue.valueOf()),
+      ),
+    );
+
+  // const xAxis = d3
+  //   .axisBottom(x)
+  //   .tickFormat((d: any) => `${new Date(d.valueOf()).getDate()}`) // Gắn thêm tiền tố "Label"
+  //   .tickSize(10); // Tăng chiều dài ticks
+  // // .tickValues(["A", "C", "E"]);
+
+  const xAxisGroup = chartArea.append("g").call(xAxis).attr("class", "x-axis");
+  xAxisGroup
+    .selectAll("text")
+    .attr("class", "x-axis-text")
+    .attr("transform", "translate(0,100)"); // Rotate x-axis text;
+
   xAxisGroup.selectAll("path, line").remove();
   xAxisGroup
     .selectAll("text")
     .style("fill", "#616a7a") // X-axis text color
     .style("font-size", "8px")
+    .attr("class", `x-axis-text`)
     .style("font-weight", "bold")
     .style("transform", `translateY(${height - 40}px)`);
 
@@ -34,80 +60,104 @@ export const createAxix = (chartArea: any, x: any, y: any) => {
     .style("font-weight", "bold")
     .style("transform", `translateX(${width - 80}px)`);
   // Style x-axis and y-axis lines
-  chartArea.selectAll(".x-axis path, .x-axis line").style("stroke", "#616a7a"); // X-axis color
+  chartArea.selectAll(".x-axis path, .x-axis line").style("stroke", "#616a7a");
+
   chartArea.selectAll(".y-axis path, .y-axis line").style("stroke", "#616a7a"); // Y-axis color
+
+  //DRAW GRID
+  chartArea.selectAll(".grid").remove();
+  chartArea
+    .append("g")
+    .attr("class", "grid")
+    .attr("transform", `translate(0, ${height - 50})`)
+    .call(
+      d3
+        .axisBottom(newX)
+        .tickSize(-height)
+        .tickFormat(() => ""),
+    );
+  chartArea
+    .selectAll(".grid line")
+    .filter(function (_: any, i: number) {
+      return i === 0;
+    })
+    .remove();
+  chartArea.selectAll(".grid").style("stroke", "#616a7a"); // Grid color
+  chartArea.selectAll(".grid line").style("stroke", "#616a7a"); // Grid color
+  chartArea.selectAll(".grid path").style("stroke", "#616a7a"); // Grid color
+
+  chartArea
+    .append("g")
+    .attr("class", "grid-row")
+    .attr("transform", `translate(${width - 80}, 0)`)
+    .call(
+      d3
+        .axisRight(y)
+        .tickSize(-width)
+        .tickFormat(() => ""),
+    );
+
+  chartArea.selectAll(".grid-row").style("stroke", "#616a7a"); // Grid color
+  chartArea.selectAll(".grid-row line").style("stroke", "#616a7a"); // Grid color
+  chartArea.selectAll(".grid-row path").style("stroke", "#616a7a"); // Grid color
 };
 
 //Create Candlestick Chart
-export const createCandlestickChart = (
-  chartArea: any,
-  x: any,
-  y: any,
-  parsedData: StockPriceType[],
-  candleWidth: number,
-  
-) => {
 
 
-    // Volume bars
-    chartArea
-    .selectAll(".barVolume")
-    .data(parsedData)
-    .enter()
-    .append("rect")
-    .attr("class", "barVolume")
-    .attr("x", (d: StockPriceType) => {
-      return x(d.Date);
-    })
-    .attr("y", (d: StockPriceType) => height - 50 - d.Volume / 40000)
-    .attr("width", candleWidth) // Candle width
-    .attr("height", (d: StockPriceType) => d.Volume / 40000)
+export const drawVerticalAndHorizontalLine = () => {
+  const chartArea = d3.select(".chart-area");
 
-    .attr("fill", (d: StockPriceType) =>
-      d.Open < d.Close ? "#7fbf7f" : "#ff7f7f  "
-    );
-
-
-  // Candle
   chartArea
-    .selectAll(".candle")
-    .data(parsedData)
-    .enter()
-    .append("rect")
-    .attr("class", "candle")
-    .attr("x", (d:StockPriceType) => {
-      return x(d.Date)
-    })
-    .attr("y", (d: { date: Date; Open: number; Close: number }) =>
-      y(Math.max(d.Open, d.Close))
-    )
-    .attr("width", candleWidth)
-    .attr("height", (d: { date: Date; Open: number; Close: number }) => {
-      const height =
-        y(Math.min(d.Open, d.Close)) - y(Math.max(d.Open, d.Close));
-
-      return height;
-    })
-    .attr("fill", (d: { date: Date; Open: number; Close: number }) =>
-      d.Open < d.Close ? "#30cc5a" : "#f63538"
-    );
-
-  // Wicks
-  chartArea
-    .selectAll(".wick")
-    .data(parsedData)
-    .enter()
     .append("line")
-    .attr("class", "wick")
-    .attr("x1", (d: StockPriceType) => x(d.Date)+candleWidth/2)
-    .attr("x2", (d: StockPriceType) => x(d.Date)+candleWidth/2)
-    .attr("y1", (d: StockPriceType) => y(d.High))
-    .attr("y2", (d: StockPriceType) => y(d.Low))
-    .attr("stroke", (d: StockPriceType) =>
-      d.Open < d.Close ? "#30cc5a" : "#f63538"
-    )
-    .attr("stroke-width", 1);
+    .attr("class", "vertical_line")
+    .attr("y1", 0)
+    .attr("y2", height - 50)
+    .style("stroke", "#616a7a")
+    .style("opacity", 0);
 
+  chartArea
+    .append("rect")
+    .attr("class", "vertical_rect")
+    .attr("x", 0) // Initial x position
+    .attr("y", 0) // Initial y position
+    .style("opacity", 0) // Initially hidden
+    .style("fill", "black")
+    .style("width", "30px") // Width of the rectangle
+    .style("height", "15px"); // Height of the rectangle
+  chartArea
+    .append("text")
+    .attr("class", "vertical_label")
+    .attr("x", 0) // Initial x position
+    .attr("y", 0) // Initial y position
+    .style("opacity", 0) // Initially hidden
+    .style("font-size", "8px")
+    .style("fill", "white");
 
+  chartArea
+    .append("line")
+    .attr("class", "horizontal_line")
+    .attr("x1", 0)
+    .attr("x2", width - 80)
+    .style("stroke", "#616a7a")
+    .style("opacity", 0);
+
+  chartArea
+    .append("rect")
+    .attr("class", "horizontal_rect")
+    .attr("x", 0) // Initial x position
+    .attr("y", 0) // Initial y position
+    .style("opacity", 0) // Initially hidden
+    .style("fill", "black")
+    .style("width", "60px") // Width of the rectangle
+    .style("height", "15px"); // Height of the rectangle
+
+  chartArea
+    .append("text")
+    .attr("class", "horizontal_label")
+    .attr("x", 0) // Initial x position
+    .attr("y", 0) // Initial y position
+    .style("opacity", 0) // Initially hidden
+    .style("font-size", "8px")
+    .style("fill", "white");
 };
-

@@ -53,3 +53,44 @@ body{
 .dragging {
   cursor: grabbing; /* Closed hand cursor */
 }
+.grid-row,.grid line {
+  stroke: #e0e0e0; /* Light gray color */
+  stroke-width: 0.3; /* Line thickness */
+  stroke-dasharray: 3, 3; /* Dashed pattern: 4px dash, 4px gap */
+}
+.grid .tick:first-child,
+.grid .tick:last-child {
+  display: none;
+}
+.chart-filter{
+  animation: fadeIn ease-in-out 0.4s;
+}
+
+.rsi-y-axis{
+  color: white;
+  /* transform: translateX(1120px); */
+}
+.y-axis-text{
+
+  /* transform: translateX(1120px); */
+
+}
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
