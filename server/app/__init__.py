@@ -4,12 +4,10 @@ def create_app():
     app = Flask(__name__)
     CORS(app)
 
-
-    from app.routes import user_routes,stock_routes 
+    from app.routes import stock, indicator
 
     # Register routes
-    app.register_blueprint(stock_routes.stock_bp, url_prefix='/stocks')
-    app.register_blueprint(user_routes.user_bp, url_prefix='/users')
-    # app.register_blueprint(product_routes.product_bp, url_prefix='/products')
-
+    app.register_blueprint(stock.stock_bp, url_prefix='/stocks')
+    app.register_blueprint(indicator.indicator_bp, url_prefix='/indicators')
+    
     return app
