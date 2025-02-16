@@ -52,6 +52,15 @@ export const usexOriginStore = create<xOriginStore>((set) => ({
   setXOrigin: (newVal: number) => set({ xOrigin: newVal }),
 }));
 
+interface usedRicStore{
+  ric:string;
+  setRic:(newVal:string)=>void;
+}
+export const useRicStore = create<usedRicStore>((set) => ({
+  ric: "",
+  setRic: (newVal: string) => set({ ric: newVal }),
+}));
+
 
 interface dataUsedStore {
   dataUsed: number;

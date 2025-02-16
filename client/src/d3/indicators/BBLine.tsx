@@ -6,10 +6,31 @@ const bbandKeys: Array<"BB_lower" | "BB_middle" | "BB_upper"> = [
   "BB_middle",
   "BB_upper",
 ];
-const addBBLine = async (x: any, y: any,dataUsed:number,xOrigin:number) => {
+const addBBLine = async (
+  x: any,
+  ric: string,
+  dateStart: string,
+  y: any,
+  dataUsed: number,
+  xOrigin: number,
+) => {
+  
   removeBBLine();
+  const window = 20
+  const response = await fetchStock(
+    `/indicators/BB?ticker=${ric}&window=${window}`,
+  );
+  let data = [];
 
-  const data = await fetchStock("/indicators/BB");
+  for (let i = 0; i < response.length; i++) {
+    if (response[i].Date === dateStart) {
+      data = response.slice(i+window, response.length);
+      break
+    }
+  }
+  if (data.length === 0) {
+    data = response.slice(0, dataUsed - window);
+  }
 
   const chartArea = d3.select(".chart-area");
   const lineGenerator = (key: "BB_lower" | "BB_middle" | "BB_upper") =>
@@ -30,9 +51,7 @@ const addBBLine = async (x: any, y: any,dataUsed:number,xOrigin:number) => {
     .attr("class", "bband-area")
     .attr("d", areaGenerator)
     .attr("fill", "rgba(135, 206, 235, 0.1)")
-    .attr('transform', `translate(${xOrigin},0)`);  
-    ;
-
+    .attr("transform", `translate(${xOrigin},0)`);
   bbandKeys.forEach((key, i) => {
     chartArea
       .append("path")
@@ -42,20 +61,18 @@ const addBBLine = async (x: any, y: any,dataUsed:number,xOrigin:number) => {
       .attr("stroke", i === 0 || i === 2 ? "#2196f3" : "#fd8429") // Blue for upper/lower, orange for middle
       .attr("stroke-width", 1.5)
       .attr("fill", "none")
-      .attr('transform', `translate(${xOrigin},0)`);  
-      ;
+      .attr("transform", `translate(${xOrigin},0)`);
   });
 };
 export default addBBLine;
 
-export const removeBBLine =  () => {
-
+export const removeBBLine = () => {
   const chartArea = d3.select(".chart-area");
 
   chartArea.select(".bband-area").remove();
 
   bbandKeys.forEach((key) => {
-    chartArea.select('.'+key.toLocaleLowerCase() + "-line").remove();
+    chartArea.select("." + key.toLocaleLowerCase() + "-line").remove();
   });
 };
 
@@ -66,7 +83,7 @@ export const hiddenBBLine = () => {
 
   bbandKeys.forEach((key) => {
     chartArea
-      .select('.'+key.toLocaleLowerCase() + "-line")
+      .select("." + key.toLocaleLowerCase() + "-line")
       .style("display", "none");
   });
 };

@@ -8,6 +8,8 @@ import { removeMACDLine } from "../d3/indicators/MACDLine";
 import { removeMFILine } from "../d3/indicators/MFILine";
 import { removeRSILine } from "../d3/indicators/RSILine";
 import { useVisibleIndicatorsStore } from "../store/store";
+import { removeSMA50Line } from "../d3/indicators/SMA50";
+import { removeSMA20Line } from "../d3/indicators/SMA20Line";
 const ChartControl = ({
   isOpenSelectChart,
   setIsOpenSelectChart,
@@ -169,8 +171,14 @@ const ChartControl = ({
                   if (indicator === "Bollinger Bands") {
                     removeBBLine();
                   }
-                  if (indicator === "Moving Average") {
+                  if (indicator === "Moving Average 10") {
                     removeSMALine();
+                  }
+                  if(indicator === 'Moving Average 50'){
+                    removeSMA50Line()
+                  }
+                  if(indicator === 'Moving Average 50'){
+                    removeSMA20Line()
                   }
                   if(indicator === 'MACD'){
                     removeMACDLine()

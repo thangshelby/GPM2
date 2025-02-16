@@ -6,8 +6,8 @@ import {
   createCandlestickChart,
   deleteCandlestickChart,
 } from "../d3/draw/CandleStickChart";
-import { createLineChart,deleteLineChart } from "../d3/draw/LineChart";
-import { createBarChart,deleteBarChart } from "../d3/draw/Barchart";
+import { createLineChart, deleteLineChart } from "../d3/draw/LineChart";
+import { createBarChart, deleteBarChart } from "../d3/draw/Barchart";
 import {
   addMouseEvents,
   // addZoomBehavior,
@@ -19,37 +19,23 @@ import addBBLine from "../d3/indicators/BBLine";
 import addMFILine from "../d3/indicators/MFILine";
 import addMACDLine from "../d3/indicators/MACDLine";
 import addRSILine from "../d3/indicators/RSILine";
-import {
-  useVisibleIndicatorsStore,
-  usexOriginStore,
-  usedDataStore,
-} from "../store/store";
+import addSMA50Line from "../d3/indicators/SMA50";
+import addSMA20Line from "../d3/indicators/SMA20Line";
+
+import { useVisibleIndicatorsStore, usexOriginStore } from "../store/store";
 
 const Charts: React.FC<{
   data: StockPriceType[];
   selectedChart: number;
-}> = React.memo(({ data, selectedChart }) => {
+  ric: string;
+}> = React.memo(({ data, selectedChart, ric }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const xRef = useRef<d3.ScaleBand<string> | null>(null);
   const yRef = useRef<d3.ScaleBand<string> | null>(null);
-  const [candleWidth, setCandleWidth] = useState(8);
+  const [candleWidth, setCandleWidth] = useState(5);
 
   const { visibleIndicators } = useVisibleIndicatorsStore();
   const { xOrigin, setXOrigin } = usexOriginStore();
-  const { setDataUsed } = usedDataStore();
-
-  const [flexHeight, setFlexHeight] = useState(height);
-
-  useEffect(() => {
-    setDataUsed(data.length);
-
-    const deficitHeight = visibleIndicators.filter(
-      (indicator) =>
-        indicator !== "Bollinger Bands" && indicator !== "Moving Average",
-    );
-
-    setFlexHeight(deficitHeight.length);
-  }, [visibleIndicators]);
 
   const [stockPrices, setStockPrices] = useState<{
     Date: string;
@@ -85,7 +71,7 @@ const Charts: React.FC<{
     x = d3
       .scaleBand()
       .domain(data.map((d) => d.Date))
-      .range([-(data.length - 112) * 10, width - 80])
+      .range([-(data.length - 112) * candleWidth, width - 80])
       .padding(0);
 
     xRef.current = x;
@@ -108,14 +94,24 @@ const Charts: React.FC<{
       {},
     );
 
+    const min1 = d3.min(data, (d) => d.Low) ?? 0;
+    const min2 = d3.min(data, (d) => d.Open) ?? 0;
+    const min3 = d3.min(data, (d) => d.Close) ?? 0;
+    const min = d3.min([min1, min2, min3]) ?? 0;
+
+    const max1 = d3.max(data, (d) => d.High) ?? 0;
+    const max2 = d3.max(data, (d) => d.Open) ?? 0;
+    const max3 = d3.max(data, (d) => d.Close) ?? 0;
+    const max = d3.max([max1, max2, max3]) ?? 0;
+
     y = d3
       .scaleLinear()
-      .domain(
-        [d3.min(data, (d) => d.Low), d3.max(data, (d) => d.High)].map(
-          (val) => (val! * 100) / 100,
-        ) as [number, number],
-      )
+      .domain([min, max] as [number, number])
       .range([height - 70, 0]);
+    // y = d3
+    //   .scaleLinear()
+    //   .domain([1000, 80000] as [number, number])
+    //   .range([height - 70, 0]);
 
     yRef.current = y;
 
@@ -145,18 +141,17 @@ const Charts: React.FC<{
       deleteLineChart();
       deleteBarChart();
       createCandlestickChart(xRef.current, yRef.current, data, candleWidth);
-    } 
-    if(selectedChart === 1){
+    }
+    if (selectedChart === 1) {
       deleteCandlestickChart();
       deleteBarChart();
       createLineChart(xRef.current, yRef.current, data);
     }
-    if(selectedChart === 2){
+    if (selectedChart === 2) {
       deleteCandlestickChart();
       deleteLineChart();
       createBarChart(xRef.current, yRef.current, data, candleWidth);
     }
-
   }, [selectedChart, data]);
 
   useEffect(() => {
@@ -183,32 +178,54 @@ const Charts: React.FC<{
   useEffect(() => {
     visibleIndicators.forEach((indicator) => {
       switch (indicator) {
-        case "Moving Average":
-          addSMALine(xRef.current, yRef.current, data.length - 3, xOrigin);
+        case "Moving Average 10":
+          addSMALine(
+            xRef.current,
+            ric,
+            data[0].Date,
+            yRef.current,
+            data.length,
+            xOrigin,
+          );
+          break;
+        case "Moving Average 50":
+          addSMA50Line(
+            xRef.current,
+            ric,
+            data[0].Date,
+            yRef.current,
+            data.length,
+            xOrigin,
+          );
+          break;
+        case "Moving Average 20":
+          addSMA20Line(
+            xRef.current,
+            ric,
+            data[0].Date,
+            yRef.current,
+            data.length,
+            xOrigin,
+          );
           break;
         case "Bollinger Bands":
-          addBBLine(xRef.current, yRef.current, data.length - 3, xOrigin);
+          addBBLine(
+            xRef.current,
+            ric,
+            data[0].Date,
+            yRef.current,
+            data.length,
+            xOrigin,
+          );
           break;
         case "MACD":
-          addMACDLine(xRef.current, data.length - 3, xOrigin);
+          addMACDLine(xRef.current, ric, data[0].Date, data.length, xOrigin);
           break;
         case "Money Flow Index":
-          addMFILine(
-            xRef.current,
-            yRef.current,
-            data.length - 3,
-            xOrigin,
-            flexHeight,
-          );
+          addMFILine(xRef.current, ric, data[0].Date, data.length, xOrigin);
           break;
         case "Relative Strength Index":
-          addRSILine(
-            xRef.current,
-            yRef.current,
-            data.length - 3,
-            xOrigin,
-            flexHeight,
-          );
+          addRSILine(xRef.current, ric, data[0].Date, data.length, xOrigin);
           break;
         default:
           break;

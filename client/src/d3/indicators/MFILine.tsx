@@ -8,17 +8,29 @@ interface MFILineType {
 
 const addMFILine = async (
   x: any,
-  y: any,
+  ric:string,
+  dateStart: string,
   dataUsed: number,
-  flexHeight: number,
-  xOrigin: number,
+  xOrigin: number,  
 ) => {
   // Remove any existing MFI chart
   removeMFILine();
+  const window = 14;
+  
 
   // Fetch MFI data
-  const response: MFILineType[] = await fetchStock("/indicators/MFI");
-  const data = response.slice(0, dataUsed);
+  const response: MFILineType[] = await fetchStock(`/indicators/MFI?ticker=${ric}&window=${window}`);  
+  let data :MFILineType[]= [];
+
+  for (let i = 0; i < response.length; i++) {
+    if (response[i].Date === dateStart) {
+      data = response.slice(i+window, response.length);
+      break
+    }
+  }
+  if (data.length === 0) {
+    data = response.slice(0, dataUsed - window);
+  }
 
   const isRSI = Number(!d3.select(".RSI-chart-area").empty())
   const RSIHeight= 150
@@ -26,7 +38,6 @@ const addMFILine = async (
   const isMACD = Number(!d3.select(".MACD-chart-area").empty())
   const MACDHeight= 200
 
-  const exitChart = Number(isRSI) + Number(isMACD);
 
   const svg = d3.select(".chart");
 

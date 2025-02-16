@@ -93,4 +93,29 @@ body{
   to {
     opacity: 0;
   }
+}::-webkit-scrollbar {
+  width: 12px; /* Độ rộng của thanh cuộn dọc */
+  height: 12px; /* Độ cao của thanh cuộn ngang */
+}
+
+/* Nền của thanh cuộn */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Màu nền */
+  border-radius: 10px; /* Góc bo tròn */
+}
+
+/* Thanh trượt (thumb) */
+::-webkit-scrollbar-thumb {
+  background: #888; /* Màu thanh trượt */
+  border-radius: 10px; /* Góc bo tròn */
+}
+
+/* Thanh trượt khi hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Màu khi hover */
+}
+
+/* Góc của thanh cuộn (trên các phần tử nhỏ) */
+::-webkit-scrollbar-corner {
+  background: #f1f1f1;
 }

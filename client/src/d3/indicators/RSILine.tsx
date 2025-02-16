@@ -9,26 +9,38 @@ interface RSIType {
 // Function to add the RSI chart
 const addRSILine = async (
   x: any,
-  y: any,
+  ric: string,
+  dateStart: string,
   dataUsed: number,
-  flexHeight: number,
   xOrigin: number,
 ) => {
   removeRSILine();
-  const response: RSIType[] = await fetchStock("/indicators/RSI");
-  const data = response.slice(0, dataUsed);
+  const window = 14;
+
+  const response: RSIType[] = await fetchStock(
+    `/indicators/RSI?ticker=${ric}&window=${window}`,
+  );
+
+  let data: RSIType[] = [];
+
+  for (let i = 0; i < response.length; i++) {
+    if (response[i].Date === dateStart) {
+      data = response.slice(i + window, response.length);
+      break;
+    }
+  }
+  if (data.length === 0) {
+    data = response.slice(0, dataUsed - window);
+  }
 
   const isMACD = Number(!d3.select(".MACD-chart-area").empty());
-  const MACDHeight= 200
+  const MACDHeight = 200;
   const isMFI = Number(!d3.select(".MFI-chart-area").empty());
   const MFIHeight = 150;
 
- 
-
-
   const svg = d3.select(".chart");
 
-  svg.attr("height", height + 150 +isMFI*MFIHeight + isMACD*MACDHeight);
+  svg.attr("height", height + 150 + isMFI * MFIHeight + isMACD * MACDHeight);
 
   const xAxis = d3.select(".x-axis-text");
   xAxis.style("transform", `translateY(${height + 250}px)`);
@@ -39,7 +51,10 @@ const addRSILine = async (
     .attr("class", "RSI-chart-area")
     .attr("width", width)
     .attr("height", 100)
-    .attr("transform", `translate(0, ${height - 100 +isMFI*MFIHeight + isMACD*MACDHeight })`);
+    .attr(
+      "transform",
+      `translate(0, ${height - 100 + isMFI * MFIHeight + isMACD * MACDHeight})`,
+    );
 
   // Define a new Y scale for RSI
   const newY = d3
@@ -87,8 +102,8 @@ const addRSILine = async (
   RSIChartArea.append("line")
     .attr("x1", 0)
     .attr("x2", width - 80)
-    .attr("y1", newY(0)+10) // Position for the 0% line
-    .attr("y2", newY(0)+10)
+    .attr("y1", newY(0) + 10) // Position for the 0% line
+    .attr("y2", newY(0) + 10)
     .attr("stroke", "#7e57c2") // Line color
     .attr("stroke-width", 0.3)
     .attr("stroke-dasharray", "3 3"); // Dashed line
@@ -96,8 +111,8 @@ const addRSILine = async (
   RSIChartArea.append("line")
     .attr("x1", 0)
     .attr("x2", width - 80)
-    .attr("y1", newY(100)-10) // Position for the 100% line
-    .attr("y2", newY(100)-10)
+    .attr("y1", newY(100) - 10) // Position for the 100% line
+    .attr("y2", newY(100) - 10)
     .attr("stroke", "#7e57c2") // Line color
     .attr("stroke-width", 0.3)
     .attr("stroke-dasharray", "3 3"); // Dashed line

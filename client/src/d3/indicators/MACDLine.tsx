@@ -1,30 +1,51 @@
 import * as d3 from "d3";
 import { fetchStock } from "../../api";
 import { width, height } from "../../constant";
-
+import { StockPriceType } from "../../type";
 interface MACDType {
   Date: string;
   MACD: number;
   MACD_signal: number;
   MACD_hist: number;
 }
-const addMACDLine = async (x: any, dataUsed: number, xOrigin: number) => {
+const addMACDLine = async (
+  x: any,
+  ric: string,
+  dateStart: string,
+  dataUsed: number,
+  xOrigin: number,
+) => {
   // Remove any existing MACD chart
   removeMACDLine();
-
+  const window = 9;
+  const fast = 12;
+  const slow = 26;
   // Fetch MACD data
-  const response: MACDType[] = await fetchStock("/indicators/MACD");
-  const data = response.slice(0, dataUsed -30);
+  const response: MACDType[] = await fetchStock(
+    `/indicators/MACD?ticker=${ric}&window=${window}&fast=${fast}&slow=${slow}`,
+  );
+
+  
+  let data:MACDType[]= [];
+
+  for (let i = 0; i < response.length; i++) {
+    if (response[i].Date === dateStart) {
+      data = response.slice(i+window, response.length);
+      break
+    }
+  }
+  if (data.length === 0) {
+    data = response.slice(0, dataUsed - window);
+  }
 
   const isRSI = Number(!d3.select(".RSI-chart-area").empty());
-  const RSIHeight= 150
+  const RSIHeight = 150;
   const isMFI = Number(!d3.select(".MFI-chart-area").empty());
   const MFIHeight = 150;
- 
 
   const svg = d3.select(".chart");
 
-  svg.attr("height", height + 200 + isMFI*MFIHeight + isRSI*RSIHeight);
+  svg.attr("height", height + 200 + isMFI * MFIHeight + isRSI * RSIHeight);
 
   // Create a separate chart area for MACD
   const MACDChartArea = svg
@@ -32,7 +53,10 @@ const addMACDLine = async (x: any, dataUsed: number, xOrigin: number) => {
     .attr("class", "MACD-chart-area")
     .attr("width", width)
     .attr("height", 200)
-    .attr("transform", `translate(0, ${height - 100 + isMFI*MFIHeight + isRSI*RSIHeight})`);
+    .attr(
+      "transform",
+      `translate(0, ${height - 100 + isMFI * MFIHeight + isRSI * RSIHeight})`,
+    );
 
   // Define a new Y scale for MACD
   const maxMACD = d3.max(data, (d) => d.MACD) ?? 100;
@@ -40,8 +64,6 @@ const addMACDLine = async (x: any, dataUsed: number, xOrigin: number) => {
 
   const maxMACD_signal = d3.max(data, (d) => d.MACD_signal) ?? 100;
   const minMACD_signal = d3.min(data, (d) => d.MACD_signal) ?? 0;
-
-  
 
   const domain = [
     Math.min(minMACD, minMACD_signal) * 1.2,
@@ -99,20 +121,20 @@ const addMACDLine = async (x: any, dataUsed: number, xOrigin: number) => {
     .attr("height", (d: any) => Math.abs(newY(0) - newY(d.MACD_hist)))
     .style("fill", (d: any, i: number) => {
       const previousHist = i > 0 ? data[i - 1].MACD_hist : 0; // MACD_hist của ngày trước đó
-  
+
       if (d.MACD_hist > 0) {
         // MACD_hist > 0
         if (d.MACD_hist > previousHist) {
-          return "#22ab94";  // Xanh đậm khi MACD_hist tăng
+          return "#22ab94"; // Xanh đậm khi MACD_hist tăng
         } else {
-          return "#ace5dc";  // Xanh nhạt khi MACD_hist giảm
+          return "#ace5dc"; // Xanh nhạt khi MACD_hist giảm
         }
       } else {
         // MACD_hist < 0
         if (d.MACD_hist < previousHist) {
-          return "#ff5252";  // Đỏ đậm khi MACD_hist giảm
+          return "#ff5252"; // Đỏ đậm khi MACD_hist giảm
         } else {
-          return "#fccbcd";  // Đỏ nhạt khi MACD_hist tăng
+          return "#fccbcd"; // Đỏ nhạt khi MACD_hist tăng
         }
       }
     });
@@ -122,7 +144,7 @@ const addMACDLine = async (x: any, dataUsed: number, xOrigin: number) => {
     .data([data.slice(0, dataUsed)])
     .attr("class", "macd-line")
     .attr("d", line)
-    .attr("stroke", "#42a5f5") // Color for MACD line
+    .attr("stroke", "#42a5f5") // Color for MACD line XANh
     .attr("stroke-width", 2)
     .attr("fill", "none");
 
@@ -131,7 +153,7 @@ const addMACDLine = async (x: any, dataUsed: number, xOrigin: number) => {
     .data([data.slice(0, dataUsed)])
     .attr("class", "macd-signal-line")
     .attr("d", signalLine)
-    .attr("stroke", "#ff7043")
+    .attr("stroke", "#ff7043") //CAM
     .attr("stroke-width", 2)
     .attr("fill", "none");
 
