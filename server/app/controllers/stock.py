@@ -3,35 +3,24 @@ import pandas as pd
 import pandas_ta as ta
 
 from app.database.model import DbModel  
+model = DbModel()
+def get_stock_info(ticker='AAA'):
+    # stock = yf.Ticker(ticker)
+    ticker= ticker.upper()
+    response = model.get_data_info(ticker)
 
-def get_stock_data(ticker='AAA'):
-    stock = yf.Ticker(ticker)
-    return stock.history(period='1d', interval='1m').to_json()
+    return response.to_dict(orient='records')
 def get_stock_prices(ticker):
     model= DbModel()
     stock_prices= model.get_df(ticker)
     
     df= stock_prices.copy() 
     
-    df['date']= pd.to_datetime(df['Date'])
-    df.set_index('date', inplace=True)
+    # df['date']= pd.to_datetime(df['Date'])
+    # df.set_index('date', inplace=True)
 
     return stock_prices.to_dict(orient='records')
 
-def get_indicator():
-    ticker= 'AAPL'
+def get_all_stock_rics():
     model= DbModel()
-    
-    stock_prices= model.get_df(ticker)
-    
-    df= stock_prices.copy() 
-    
-    df['date']= pd.to_datetime(df['Date'])
-    df.set_index('date', inplace=True)
-    
-    df['SMA'] = ta.sma(df['Close'], length=3)
-    df.drop(columns=['Open', 'High', 'Low', 'Close', 'Volume'], inplace=True)
-
-    df= df.dropna()
-    return df.to_dict(orient='records')
-    
+    return model.get_all_stock_rics()

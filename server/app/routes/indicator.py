@@ -17,16 +17,19 @@ def fetch_EMA():
 def fetch_RSI():
     ticker= request.args.get('ticker')
     window= int(request.args.get('window'))
-    return get_RSI()
+    return get_RSI(ticker,window)
 
 @indicator_bp.route('/MACD', methods=['GET'])
 def fetch_MACD():
+    
+    
     ticker= request.args.get('ticker')
+    print(ticker)
     window= int(request.args.get('window'))
     fast= int(request.args.get('fast'))
     slow= int(request.args.get('slow'))
     
-    return get_MACD()
+    return get_MACD(ticker,window,fast,slow)
 
 @indicator_bp.route('/BB', methods=['GET'])
 def fetch_BB():
@@ -39,5 +42,5 @@ def fetch_BB():
 def fetch_MFI():
     ticker= request.args.get('ticker')
     window= int(request.args.get('window'))
-    return get_MFI()
+    return get_MFI(ticker,window)
 
