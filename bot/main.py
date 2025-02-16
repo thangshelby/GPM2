@@ -18,7 +18,7 @@ load_dotenv()
 
 
 def main():
-    app = ApplicationBuilder().token(os.getenv('TELEGRAM_BOT_TOKEN')).build()
+    app = ApplicationBuilder().token('7001217343:AAFKgBcomMcJrLlVi6DuSacRmsOZ4wNPN2A').build()
    
     app.add_handler(CommandHandler("start", start_command))
     app.add_handler(CommandHandler("help", help_command))
