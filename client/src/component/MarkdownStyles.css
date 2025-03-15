@@ -1,0 +1,14 @@
+.markdown-content {
+    font-size: 1rem; /* 32px */
+    line-height: 1;
+  }
+  
+  .markdown-content h1,
+  .markdown-content h2,
+  .markdown-content h3,   
+  .markdown-content p,
+  .markdown-content li,
+  .markdown-content blockquote,
+  .markdown-content strong {
+    font-size: 1rem;
+  }

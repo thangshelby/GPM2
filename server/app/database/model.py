@@ -1,48 +1,42 @@
 import pandas as pd
 import os
 import yfinance as yf
+from vnstock import Vnstock
 class DbModel():
-    def get_df(self, RIC='AAA'):
-        df= pd.read_csv(f'./app/data/Vietnam/{RIC}.txt',sep='\t')
-        df.dropna(inplace=True)
+    def get_df(self, RIC='aaa',start_date='2020-01-01',end_date='2025-01-01',interval='1D'):
         
-        df.columns =['Date', 'Open', 'Low', 'High', 'Close', 'Volume']
-        df.loc[1:, "Open"] = df["Close"].shift(1)[1:]
+        # ****USE DATA FROM EXCEL****
+        # df= pd.read_csv(f'./app/data/Vietnam/{RIC}.txt',sep='\t')    
+        # df.columns =['Date', 'Open', 'Low', 'High', 'Close', 'Volume']
+        # df.loc[1:, "Open"] = df["Close"].shift(1)[1:]
         
-        columns_to_check = [ 'Date', 'Open', 'Low', 'High', 'Close', 'Volume']
-        # Ensure Date column is a datetime object
+        # columns_to_check = [ 'Date', 'Open', 'Low', 'High', 'Close', 'Volume']
+        # # Ensure Date column is a datetime object
         
-        df['Date'] = pd.to_datetime(df['Date'])
-        df.index = df['Date']
+        # df['Date'] = pd.to_datetime(df['Date'])
+        # df.index = df['Date']
 
-        # # Set Date as the index
+        # # # Set Date as the index
+        # df['Date'] = df.index
+        # df['Date']=  df['Date'].astype(str)
+        # df['Date']=  df['Date'].str.replace(' 00:00:00','')  
+        # ****USE DATA FROM EXCEL****
+        
+        
+        # ****USE DATA FROM VNSTOCK****
+        stock = Vnstock().stock(symbol=RIC, source="VCI")
+        df = stock.quote.history(start=start_date, end=end_date, interval=interval)
+        df["time"] = pd.to_datetime(df["time"])
+        df.index = df["time"]
+        df = df.drop(columns=['time'])
         df['Date'] = df.index
         df['Date']=  df['Date'].astype(str)
         df['Date']=  df['Date'].str.replace(' 00:00:00','')  
-        
-        
-        
-        # df_check = df.iloc[:,0:df.shape[1]-1]
-        # df['Open_Less_Than_Low'] = df['Open'] < df['Low']
-        # if df['Open_Less_Than_Low'].sum() > 0:
-        #        # DF WITH YFINANCE
-        #     df= yf.download(RIC+ '.VN', start="2010-01-01", end='2013-01-01')
-        #     # print(df.head(10))
-        #     df.columns= [ 'Close', 'High', 'Low','Open' ,'Volume']
-        #     col=['Close', 'High', 'Low','Open' ,'Volume']
-        #     # exchange_rate = 23000
-        #     # df[col] = df[col].apply(lambda x: x * exchange_rate)
-        #     df['Date']= df.index
-        #     df['Date']=  df['Date'].astype(str)
-        #     df['Date']=  df['Date'].str.replace(' 00:00:00','')  
-            
-        
-        
-     
-
-
-        # null_values =df[columns_to_check].isnull().sum()
-        df= df.dropna()
+        df.columns = ['Open','High','Low','Close','Volume','Date']
+        df[['Open', 'High', 'Low', 'Close']] = df[['Open', 'High', 'Low', 'Close']] * 1000
+        # ****USE DATA FROM VNSTOCK****
+              
+        df.dropna(inplace=True)
         return df
     def get_data_info(self, RIC):
         data_info_list= pd.read_excel('./app/data/Vietnam/Vietnam.xlsx')
@@ -60,4 +54,3 @@ class DbModel():
 
         return response.to_dict(orient='records')
         
-         

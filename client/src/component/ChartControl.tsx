@@ -2,14 +2,16 @@ import { FaPenNib, FaRegLightbulb, FaRegEye } from "react-icons/fa";
 import { IoMdArrowDropdown, IoMdClose } from "react-icons/io";
 import { SlCalender } from "react-icons/sl";
 import { option3, option4, dateFilter, indicatorFilter } from "../constant";
-import { removeBBLine} from "../d3/indicators/BBLine";
-import { removeSMALine} from "../d3/indicators/SMALine";
+import { removeBBLine } from "../d3/indicators/BBLine";
+import { removeSMALine } from "../d3/indicators/SMALine";
 import { removeMACDLine } from "../d3/indicators/MACDLine";
 import { removeMFILine } from "../d3/indicators/MFILine";
 import { removeRSILine } from "../d3/indicators/RSILine";
 import { useVisibleIndicatorsStore } from "../store/store";
 import { removeSMA50Line } from "../d3/indicators/SMA50";
 import { removeSMA20Line } from "../d3/indicators/SMA20Line";
+import { FaFilePdf } from "react-icons/fa6";
+import { useCanCreatePdfStore } from "../store/store";
 const ChartControl = ({
   isOpenSelectChart,
   setIsOpenSelectChart,
@@ -19,6 +21,7 @@ const ChartControl = ({
   setIsOpenIndicatorFilter,
   selectedDateFilter,
   setSelectedDateFilter,
+  generatePDF,
 }: {
   isOpenSelectChart: boolean;
   setIsOpenSelectChart: (value: boolean) => void;
@@ -29,11 +32,11 @@ const ChartControl = ({
 
   selectedDateFilter: number;
   setSelectedDateFilter: (value: number) => void;
+  generatePDF: () => void;
 }) => {
   const { visibleIndicators, setVisibleIndicators } =
     useVisibleIndicatorsStore();
-
-  
+  const { canCreatePdf, setCanCreatePdf } = useCanCreatePdfStore();
   return (
     <div className="relative flex flex-col">
       <div className="flex flex-row items-center justify-between">
@@ -141,10 +144,26 @@ const ChartControl = ({
         </div>
 
         <div className="flex flex-row items-center gap-x-[0.6rem]">
+          <div
+            onClick={
+              canCreatePdf
+                ? generatePDF
+                : (e) => {
+                    e.preventDefault();
+                  }
+            }
+            className={`flex flex-row items-center gap-x-[0.6rem] rounded-2xl bg-text_primary px-[1rem] py-[0.4rem] text-[1.5rem]
+               text-white ${canCreatePdf?' hover:cursor-pointer hover:bg-blue-600':'hover:cursor-not-allowed opacity-40'}`}
+          >
+            <FaFilePdf size={10} />
+
+            <p className="text-[1.4rem] font-semibold">Generate Free PDF</p>
+          </div>
+
           {option4.map((option, index) => (
             <div
               key={index}
-              className={`flex flex-row items-center gap-x-[0.6rem] rounded-2xl bg-button px-[1rem] py-[0.4rem] text-[1.5rem] text-white hover:cursor-pointer ${index == 1 && "bg-text_primary"}`}
+              className={`flex flex-row items-center gap-x-[0.6rem] rounded-2xl bg-button px-[1rem] py-[0.4rem] text-[1.5rem] text-white hover:cursor-pointer`}
             >
               {option.icon}
               {option.title && (
@@ -174,20 +193,20 @@ const ChartControl = ({
                   if (indicator === "Moving Average 10") {
                     removeSMALine();
                   }
-                  if(indicator === 'Moving Average 50'){
-                    removeSMA50Line()
+                  if (indicator === "Moving Average 50") {
+                    removeSMA50Line();
                   }
-                  if(indicator === 'Moving Average 50'){
-                    removeSMA20Line()
+                  if (indicator === "Moving Average 50") {
+                    removeSMA20Line();
                   }
-                  if(indicator === 'MACD'){
-                    removeMACDLine()
+                  if (indicator === "MACD") {
+                    removeMACDLine();
                   }
-                  if(indicator === 'Money Flow Index'){
-                    removeMFILine()
+                  if (indicator === "Money Flow Index") {
+                    removeMFILine();
                   }
-                  if(indicator === 'Relative Strength Index'){
-                    removeRSILine()
+                  if (indicator === "Relative Strength Index") {
+                    removeRSILine();
                   }
                   setVisibleIndicators(
                     visibleIndicators.filter((item) => item !== indicator),

@@ -8,7 +8,10 @@ stock_bp = Blueprint('stock_bp', __name__)
 @stock_bp.route('/stock_prices', methods=['GET'])
 def fetch_stock_prices():
     ticker= request.args.get('ticker')
-    return get_stock_prices(ticker)
+    start_date= request.args.get('start_date')
+    end_date= request.args.get('end_date')
+    
+    return get_stock_prices(ticker,start_date,end_date)
 
 @stock_bp.route('/all_stock_rics', methods=['GET'])
 def fetch_all_stock_rics():
